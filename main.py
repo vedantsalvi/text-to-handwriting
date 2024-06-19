@@ -8,7 +8,7 @@ font_paths = [
     r"D:\Vedant Learnings\handwriting project\fonts\Ved-Regular.ttf"
 ]
 
-# Load fonts
+# Load fontss
 fonts = [ImageFont.truetype(font_path, size=40) for font_path in font_paths]
 
 # Global variables to store previous text, image, and available fonts
