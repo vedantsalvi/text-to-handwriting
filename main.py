@@ -1,6 +1,8 @@
 from PIL import Image, ImageDraw, ImageFont, ImageTk
 import random
 import tkinter as tk
+from tkinter import filedialog
+from threading import Timer
 
 # Paths to your font sets using raw strings to handle backslashes
 font_paths = [
@@ -26,6 +28,9 @@ word_space = 10  # Initial word space
 # Load the background lined page image
 lined_page_path = r"D:\Vedant Learnings\handwriting project\text-to-handwriting\background\lined_page.png"
 lined_page_image = Image.open(lined_page_path).convert("RGB")
+
+# Initialize text_timer as None
+text_timer = None
 
 # Function to draw a character on the image using the provided font
 def drawchar(d, x, y, char, font):
@@ -70,10 +75,23 @@ def draw_text_on_image():
     image_label.config(image=photo)
     image_label.image = photo
 
-# Function to handle text change event
+# Function to handle text change event with debounce
 def on_text_changed(event):
+    global char_font_list, prev_text, text_timer
+
+    # Check if text_timer is None
+    if text_timer:
+        text_timer.cancel()
+
+    # Start a new timer to process text after 500 milliseconds (adjust as needed)
+    text_timer = Timer(0.5, process_text)
+    text_timer.start()
+
+def process_text():
     global char_font_list, prev_text
-    text = entry.get()  # Get current text from entry widget
+
+    # Get current text from entry widget
+    text = entry.get()
 
     # Determine the position of the first change (deletion or addition)
     start_index = 0
@@ -148,6 +166,22 @@ def on_word_space_changed(event):
         word_space = 10  # Default value if input is invalid
     draw_text_on_image()  # Redraw the text with the new word space
 
+# Function to handle image download
+def download_image():
+    global img
+    if img:
+        file_path = filedialog.asksaveasfilename(defaultextension=".png", filetypes=[("PNG files", "*.png"), ("JPEG files", "*.jpg")])
+        if file_path:
+            # Determine file extension to save in appropriate format
+            file_extension = file_path.split(".")[-1].lower()
+
+            if file_extension == "png":
+                img.save(file_path)
+            elif file_extension == "jpg" or file_extension == "jpeg":
+                img.save(file_path, quality=100)  # Adjust quality as needed
+            else:
+                img.save(file_path)  # Default to PNG if extension is unrecognized
+
 # GUI setup using tkinter
 root = tk.Tk()
 root.title("Live Text to Image Generator")
@@ -169,9 +203,8 @@ start_x_label.grid(row=0, column=2, padx=5)
 start_x_entry = tk.Entry(input_frame, width=10)
 start_x_entry.grid(row=0, column=3, padx=5)
 start_x_entry.insert(0, str(start_x))
-start_x_entry.bind('<KeyRelease>', on_start_x_changed)
+start_x_entry.bind('<KeyRelease>',on_start_x_changed)
 
-#a
 start_y_label = tk.Label(input_frame, text="Start Y Position")
 start_y_label.grid(row=0, column=4, padx=5)
 start_y_entry = tk.Entry(input_frame, width=10)
@@ -200,6 +233,9 @@ word_space_entry = tk.Entry(input_frame, width=10)
 word_space_entry.grid(row=1, column=5, padx=5)
 word_space_entry.insert(0, str(word_space))
 word_space_entry.bind('<KeyRelease>', on_word_space_changed)
+
+download_button = tk.Button(root, text="Download Image", command=download_image)
+download_button.pack(pady=10)
 
 # Entry widget for text input
 entry = tk.Entry(root, width=80)
