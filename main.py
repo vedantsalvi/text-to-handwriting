@@ -171,6 +171,7 @@ start_x_entry.grid(row=0, column=3, padx=5)
 start_x_entry.insert(0, str(start_x))
 start_x_entry.bind('<KeyRelease>', on_start_x_changed)
 
+#a
 start_y_label = tk.Label(input_frame, text="Start Y Position")
 start_y_label.grid(row=0, column=4, padx=5)
 start_y_entry = tk.Entry(input_frame, width=10)
