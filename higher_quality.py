@@ -16,17 +16,17 @@ font_paths = [
 ]
 
 # Load fonts with initial size
-initial_font_size = 12
+initial_font_size = 18
 fonts = [ImageFont.truetype(font_path, size=initial_font_size) for font_path in font_paths]
 
 # Global variables to store previous text, image, and list of characters with fonts
 prev_text = ""
 char_font_list = []  # List to store (character, font) tuples
 font_size = initial_font_size  # Initialize font size
-start_x = 72  # Initial starting x position
-start_y = 74  # Initial starting y position
+start_x = 90  # Initial starting x position
+start_y = 112  # Initial starting y position
 char_gap = 0.71  # Initial character gap multiplier
-line_gap_series = [10.0]  # Initial line gap series
+line_gap_series = [1.6, 2, 2, 2.3]  # Initial line gap series
 right_margin = 35  # Increased right margin
 word_space = 10  # Initial word space
 
@@ -190,8 +190,8 @@ lined_page_image = Image.open(lined_page_path).convert("RGB")
 def download_image():
     global char_font_list, fonts
 
-    file_path = filedialog.asksaveasfilename(defaultextension=".pdf", filetypes=[("PDF files", "*.pdf")])
-    if file_path:
+    file_path = r"D:\Vedant Learnings\handwriting project\text-to-handwriting\output higher\image.pdf"  # Specify the output file path
+    try:
         # Create a canvas for the PDF
         c = canvas.Canvas(file_path, pagesize=letter)
 
@@ -238,6 +238,14 @@ def download_image():
 
         # Save the PDF
         c.save()
+
+        # Inform user that PDF has been saved
+        print(f"PDF saved successfully at: {file_path}")
+
+    except Exception as e:
+        print(f"Error saving PDF: {e}")
+
+# GUI setup and other functions remain unchanged
 
 
 # GUI setup using tkinter
@@ -302,12 +310,8 @@ text_widget.grid(row=1, column=0, pady=10, padx=5, sticky="nsew")
 text_widget.bind('<KeyRelease>', on_text_changed)  # Bind key release event to update text
 
 # Button for downloading the image
-download_button = tk.Button(main_frame, text="Download Image", command=download_image)
+download_button = tk.Button(main_frame, text="Download pdf", command=download_image)
 download_button.grid(row=2, column=0, pady=10, padx=5, sticky="nw")
-
-# Label to display generated image
-image_label = tk.Label(main_frame)
-image_label.grid(row=0, column=1, rowspan=3, padx=10, pady=10, sticky="nsew")
 
 # Configure row and column weights for proper resizing
 main_frame.grid_columnconfigure(1, weight=1)
