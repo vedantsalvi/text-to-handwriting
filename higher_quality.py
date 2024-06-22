@@ -11,7 +11,7 @@ from reportlab.pdfbase import pdfmetrics
 
 # Paths to your font sets using raw strings to handle backslashes
 font_paths = [
-    r"D:\Vedant Learnings\handwriting project\text-to-handwriting\fonts\Fontvver2-Regular.ttf",
+    r"D:\Vedant Learnings\handwriting project\text-to-handwriting\fonts\Vfont-Regular.ttf",
     r"D:\Vedant Learnings\handwriting project\text-to-handwriting\fonts\Fontgv2Ver1-Regular.ttf"
 ]
 
@@ -81,8 +81,7 @@ def draw_text_on_image():
 
     # Show the image in the tkinter window
     photo = ImageTk.PhotoImage(img)
-    image_label.config(image=photo)
-    image_label.image = photo
+    
 
 # Function to handle text change event with debounce
 def on_text_changed(event):
@@ -187,6 +186,7 @@ lined_page_path = r"D:\Vedant Learnings\handwriting project\text-to-handwriting\
 lined_page_image = Image.open(lined_page_path).convert("RGB")
 
 # Function to download the image as PDF
+# Function to download the image as PDF
 def download_image():
     global char_font_list, fonts
 
@@ -201,12 +201,17 @@ def download_image():
         # Define initial positions and variables
         x, y = start_x, letter[1] - start_y  # Adjust starting position for PDF coordinates
         line_index = 0
+        line_gap_index = 0
 
-        for char, font in char_font_list:
+        for char, _ in char_font_list:
+            # Randomly choose a font for each character
+            chosen_font = random.choice(fonts)
+            font_path = chosen_font.path
+            font_name = f"custom_font_{line_index}_{char}"
+
             # Register font in the canvas
-            font_path = font.path
-            font_name = f"custom_font_{line_index}"
-            pdfmetrics.registerFont(TTFont(font_name, font_path))
+            if font_name not in pdfmetrics.getRegisteredFontNames():
+                pdfmetrics.registerFont(TTFont(font_name, font_path))
 
             # Set font in the canvas
             c.setFont(font_name, font_size)
@@ -220,11 +225,14 @@ def download_image():
             # Move to the next line if the text exceeds the PDF width
             if x + char_width >= letter[0] - right_margin:
                 x = start_x  # Reset x to the left margin
-                line_index += 1  # Increment line index
+                line_gap_index += 1  # Increment line gap index
 
                 # Use the corresponding line gap from the series, or the last value if we run out of values
-                current_line_gap = line_gap_series[line_index] if line_index < len(line_gap_series) else line_gap_series[-1]
+                current_line_gap = line_gap_series[line_gap_index] if line_gap_index < len(line_gap_series) else line_gap_series[-1]
                 y -= font_size + current_line_gap  # Move y down to the next line
+
+                # Reset the line_index for new line
+                line_index += 1
 
             # If y exceeds the PDF height, stop drawing
             if y - font_size <= 0:
@@ -244,6 +252,7 @@ def download_image():
 
     except Exception as e:
         print(f"Error saving PDF: {e}")
+
 
 # GUI setup and other functions remain unchanged
 
