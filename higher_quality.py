@@ -1,91 +1,45 @@
 from PIL import Image, ImageDraw, ImageFont, ImageTk
 import random
 import tkinter as tk
-from tkinter import filedialog
 from threading import Timer
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
-from reportlab.lib.colors import black
+from reportlab.lib.colors import Color
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfbase import pdfmetrics
 
 # Paths to your font sets using raw strings to handle backslashes
 font_paths = [
     r"D:\Vedant Learnings\handwriting project\text-to-handwriting\fonts\Vfont-Regular.ttf",
-    r"D:\Vedant Learnings\handwriting project\text-to-handwriting\fonts\Fontgv2Ver1-Regular.ttf"
+    r"D:\Vedant Learnings\handwriting project\text-to-handwriting\fonts\Vfont2-Regular.ttf"
 ]
 
 # Load fonts with initial size
-initial_font_size = 18
+initial_font_size = 27
 fonts = [ImageFont.truetype(font_path, size=initial_font_size) for font_path in font_paths]
 
-# Global variables to store previous text, image, and list of characters with fonts
+# Global variables
 prev_text = ""
 char_font_list = []  # List to store (character, font) tuples
 font_size = initial_font_size  # Initialize font size
-start_x = 90  # Initial starting x position
-start_y = 112  # Initial starting y position
+start_x = 68  # Initial starting x position
+start_y = 78  # Initial starting y position
 char_gap = 0.71  # Initial character gap multiplier
 line_gap_series = [1.6, 2, 2, 2.3]  # Initial line gap series
 right_margin = 35  # Increased right margin
 word_space = 10  # Initial word space
-
-# Load the background lined page image
-lined_page_path = r"D:\Vedant Learnings\handwriting project\text-to-handwriting\background\lined_page.png"
-lined_page_image = Image.open(lined_page_path).convert("RGB")
-
-# Initialize text_timer as None
 text_timer = None
 
-# Function to draw a character on the image using the provided font
-def drawchar(d, x, y, char, font):
-    bbox = d.textbbox((x, y), char, font=font)
-    char_width = bbox[2] - bbox[0]
-    d.text((x, y), char, font=font, fill=(0, 0, 0))  # Draw the character
-    return char_width
+# Load the background lined page image
+lined_page_path = r"D:\Vedant Learnings\handwriting project\text-to-handwriting\background\lined_page2.jpg"
+lined_page_image = Image.open(lined_page_path).convert("RGB")
 
-# Function to draw text on an image
-def draw_text_on_image():
-    global img, char_font_list, lined_page_image, start_x, start_y, char_gap, line_gap_series, word_space
-
-    # Create a copy of the background image
-    img = lined_page_image.copy()
-
-    d = ImageDraw.Draw(img)
-    x, y = start_x, start_y  # Starting position from entry fields
-    max_width, max_height = img.size
-    line_index = 0
-
-    # Iterate over each character and its font in the list
-    for char, font in char_font_list:
-        char_width = drawchar(d, x, y, char, font)
-
-        # Move to the next line if the text exceeds the image width
-        if x + char_width >= max_width - right_margin:  # Adjusted right margin
-            x = start_x  # Reset x to the left margin from entry fields
-            line_index += 1  # Increment line index
-
-            # Use the corresponding line gap from the series, or the last value if we run out of values
-            current_line_gap = line_gap_series[line_index] if line_index < len(line_gap_series) else line_gap_series[-1]
-            y += font_size + current_line_gap  # Move y down to the next line
-
-        # If y exceeds the image height, stop drawing
-        if y + font_size + line_gap_series[-1] >= max_height:
-            break
-
-        x += char_width * char_gap  # Adjust spacing between characters
-
-        # Add extra space after a word (if char is space)
-        if char == ' ':
-            x += word_space
-
-    # Show the image in the tkinter window
-    photo = ImageTk.PhotoImage(img)
-    
+# Custom color for text
+custom_color = Color(10/255, 10/255, 92/255)
 
 # Function to handle text change event with debounce
 def on_text_changed(event):
-    global char_font_list, prev_text, text_timer
+    global text_timer
 
     # Check if text_timer is None
     if text_timer:
@@ -114,7 +68,6 @@ def process_text():
         char_font_list.append((char, random.choice(fonts)))
 
     prev_text = text
-    draw_text_on_image()  # Update the image with the new text and fonts
 
 # Function to handle font size change
 def on_font_size_changed(event):
@@ -127,7 +80,6 @@ def on_font_size_changed(event):
     fonts = [ImageFont.truetype(font_path, size=font_size) for font_path in font_paths]
     # Update char_font_list with new fonts based on current text
     char_font_list = [(char, random.choice(fonts)) for char in prev_text]
-    draw_text_on_image()  # Redraw the text with the new font size
 
 # Function to handle starting x position change
 def on_start_x_changed(event):
@@ -136,7 +88,6 @@ def on_start_x_changed(event):
         start_x = int(start_x_entry.get())
     except ValueError:
         start_x = 50  # Default value if input is invalid
-    draw_text_on_image()  # Redraw the text with the new starting position
 
 # Function to handle starting y position change
 def on_start_y_changed(event):
@@ -145,7 +96,6 @@ def on_start_y_changed(event):
         start_y = int(start_y_entry.get())
     except ValueError:
         start_y = 50  # Default value if input is invalid
-    draw_text_on_image()  # Redraw the text with the new starting position
 
 # Function to handle character gap multiplier change
 def on_char_gap_changed(event):
@@ -154,7 +104,6 @@ def on_char_gap_changed(event):
         char_gap = float(char_gap_entry.get())
     except ValueError:
         char_gap = 1.0  # Default value if input is invalid
-    draw_text_on_image()  # Redraw the text with the new character gap
 
 # Function to handle line gap series change
 def on_line_gap_changed(event):
@@ -163,7 +112,6 @@ def on_line_gap_changed(event):
         line_gap_series = list(map(float, line_gap_entry.get().split()))
     except ValueError:
         line_gap_series = [10.0]  # Default value if input is invalid
-    draw_text_on_image()  # Redraw the text with the new line gaps
 
 # Function to handle word space change
 def on_word_space_changed(event):
@@ -172,20 +120,7 @@ def on_word_space_changed(event):
         word_space = int(word_space_entry.get())
     except ValueError:
         word_space = 10  # Default value if input is invalid
-    draw_text_on_image()  # Redraw the text with the new word space
 
-# Function to handle image download
-from reportlab.pdfgen import canvas
-from reportlab.lib.pagesizes import letter
-from reportlab.pdfbase.ttfonts import TTFont
-from reportlab.pdfbase import pdfmetrics
-from PIL import Image
-
-# Assuming lined_page_image is already loaded as a PIL.Image object
-lined_page_path = r"D:\Vedant Learnings\handwriting project\text-to-handwriting\background\lined_page.png"
-lined_page_image = Image.open(lined_page_path).convert("RGB")
-
-# Function to download the image as PDF
 # Function to download the image as PDF
 def download_image():
     global char_font_list, fonts
@@ -198,16 +133,27 @@ def download_image():
         # Set background image as the entire page
         c.drawImage(lined_page_path, 0, 0, width=letter[0], height=letter[1])
 
+        # Set text color
+        c.setFillColor(custom_color)
+
         # Define initial positions and variables
         x, y = start_x, letter[1] - start_y  # Adjust starting position for PDF coordinates
         line_index = 0
         line_gap_index = 0
+        last_font = None
 
-        for char, _ in char_font_list:
+        for i, (char, _) in enumerate(char_font_list):
             # Randomly choose a font for each character
             chosen_font = random.choice(fonts)
             font_path = chosen_font.path
-            font_name = f"custom_font_{line_index}_{char}"
+            font_name = f"custom_font_{line_index}_{i}"
+
+            # Ensure font change if the current character is the same as the last one
+            if i > 0 and char_font_list[i-1][0] == char:
+                while chosen_font == last_font:
+                    chosen_font = random.choice(fonts)
+                    font_path = chosen_font.path
+                    font_name = f"custom_font_{line_index}_{i}"
 
             # Register font in the canvas
             if font_name not in pdfmetrics.getRegisteredFontNames():
@@ -244,6 +190,9 @@ def download_image():
             if char == ' ':
                 x += word_space
 
+            # Update last_font
+            last_font = chosen_font
+
         # Save the PDF
         c.save()
 
@@ -252,10 +201,6 @@ def download_image():
 
     except Exception as e:
         print(f"Error saving PDF: {e}")
-
-
-# GUI setup and other functions remain unchanged
-
 
 # GUI setup using tkinter
 root = tk.Tk()
